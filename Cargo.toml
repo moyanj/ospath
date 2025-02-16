@@ -1,0 +1,11 @@
+[package]
+name = "ospath"
+version = "0.1.0"
+edition = "2021"
+authors = ["Moryan<moyan@moyanjdc.top>"]
+description = "A simple command line tool to get the path of the current OS."
+
+[dependencies]
+chrono = "0.4.39"
+clap = { version = "4.5.29", features = ["derive"] }
+dirs = "6.0.0"
