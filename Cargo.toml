@@ -12,3 +12,9 @@ colored = "3.0.0"
 dirs = "6.0.0"
 serde = { version = "1.0.217", features = ["derive"] }
 serde_json = "1.0.138"
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+opt-level = "s"
