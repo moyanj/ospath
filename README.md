@@ -56,13 +56,11 @@
 
 ## 使用
 
-运行 `ospath` 并指定命令来获取相应的系统信息。例如：
+运行 `ospath` 并指定命令来获取相应的系统信息。支持同时获取多个命令的结果。例如：
 
-```bash
+```
 ./ospath home          # 获取主目录路径
-./ospath user          # 获取当前用户名
-./ospath os_name       # 获取操作系统名称
-./ospath time          # 获取当前系统时间
+./ospath user desktop  # 获取当前用户名与桌面路径
 ```
 
 如果命令无效，程序会返回 `Invalid command`。
@@ -76,7 +74,7 @@
 
 可以通过 `-f` 或 `--format` 参数指定输出格式。例如：
 
-```bash
+```
 ./ospath home -f json  # 以 JSON 格式输出主目录路径
 ```
 
