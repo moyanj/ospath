@@ -1,18 +1,117 @@
-extern crate dirs;
-use clap::Parser;
+use clap::{Parser, ValueEnum};
+use colored::Colorize;
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 #[derive(Parser)]
 #[command(
-    version = "1.0",
+    version = "2.0",
     author = "Moryan",
-    about = "A simple command line tool to get the path of the current OS.y"
+    about = "A tool to retrieve multiple system information in structured formats",
+    long_about = "Retrieve multiple system paths, environment variables, and other information in text, JSON, or YAML format."
 )]
 struct Cli {
-    cmd: String,
-    args: Vec<String>,
+    #[arg(
+        required = true,
+        help = "Commands to execute (e.g., home config cache)"
+    )]
+    commands: Vec<String>,
+
+    #[arg(short, long, value_enum, default_value_t = Format::Text, help = "Output format")]
+    format: Format,
+
+    #[arg(short, long, help = "Enable colored output")]
+    color: bool,
 }
-fn pathbuf2string(buf: std::path::PathBuf) -> String {
-    buf.as_os_str().to_str().unwrap().to_string()
+
+#[derive(ValueEnum, Clone, Debug)]
+enum Format {
+    Text,
+    Json,
+}
+
+#[derive(Serialize, Deserialize)]
+struct Output {
+    status: String,
+    results: HashMap<String, String>,
+    errors: HashMap<String, String>,
+}
+
+impl Output {
+    fn new() -> Self {
+        Output {
+            status: "success".to_string(),
+            results: HashMap::new(),
+            errors: HashMap::new(),
+        }
+    }
+
+    fn add_result(&mut self, command: &str, value: String) {
+        self.results.insert(command.to_string(), value);
+    }
+
+    fn add_error(&mut self, command: &str, error: String) {
+        self.errors.insert(command.to_string(), error);
+        self.status = "partial".to_string();
+    }
+
+    fn is_empty(&self) -> bool {
+        self.results.is_empty() && self.errors.is_empty()
+    }
+}
+
+fn format_output(output: Output, format: &Format, color: bool) -> String {
+    if output.is_empty() {
+        return if color {
+            "No results found".red().to_string()
+        } else {
+            "No results found".to_string()
+        };
+    }
+
+    match format {
+        Format::Json => serde_json::to_string_pretty(&output)
+            .unwrap_or_else(|_| "JSON serialization failed".to_string()),
+        Format::Text => {
+            let mut text = String::new();
+            if !output.results.is_empty() {
+                text.push_str("Results:\n");
+                for (cmd, value) in output.results {
+                    if color {
+                        text.push_str(&format!("  {}: {}\n", cmd.green(), value.blue()));
+                    } else {
+                        text.push_str(&format!("  {}: {}\n", cmd, value));
+                    }
+                }
+            }
+            if !output.errors.is_empty() {
+                text.push_str("Errors:\n");
+                for (cmd, error) in output.errors {
+                    if color {
+                        text.push_str(&format!("  {}: {}\n", cmd.red(), error.yellow()));
+                    } else {
+                        text.push_str(&format!("  {}: {}\n", cmd, error));
+                    }
+                }
+            }
+            text
+        }
+    }
+}
+
+fn main() {
+    let args = Cli::parse();
+    let mut output = Output::new();
+
+    for cmd in args.commands {
+        match get(&cmd) {
+            Some(value) => output.add_result(&cmd, value),
+            None => output.add_error(&cmd, "Invalid command".to_string()),
+        }
+    }
+
+    let formatted_output = format_output(output, &args.format, args.color);
+    println!("{}", formatted_output);
 }
 
 fn get(cmd: &str) -> Option<String> {
@@ -110,12 +209,6 @@ fn get(cmd: &str) -> Option<String> {
     }
 }
 
-fn main() {
-    #[cfg(target_family = "wasm")]
-    {
-        panic!("This program is not supported on web")
-    }
-    let args = Cli::parse();
-    let out = get(&args.cmd).unwrap_or_else(|| "Invalid command".to_string());
-    println!("{}", out);
+fn pathbuf2string(buf: std::path::PathBuf) -> String {
+    buf.as_os_str().to_str().unwrap().to_string()
 }
