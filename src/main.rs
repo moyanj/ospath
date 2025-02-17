@@ -7,8 +7,8 @@ use std::collections::HashMap;
 #[command(
     version = "2.0",
     author = "Moryan",
-    about = "A tool to retrieve multiple system information in structured formats",
-    long_about = "Retrieve multiple system paths, environment variables, and other information in text, JSON, or YAML format."
+    about = "A tool to retrieve multiple system path in structured formats",
+    long_about = "Retrieve multiple system paths, environment variables, and other information in text, or JSON format."
 )]
 struct Cli {
     #[arg(

@@ -67,13 +67,27 @@
 
 如果命令无效，程序会返回 `Invalid command`。
 
+## 输出格式
+
+`ospath` 支持以下输出格式：
+
+- **Text**：默认格式，以可读的文本形式输出结果。
+- **Json**：以 JSON 格式输出结果，适合程序化处理。
+
+可以通过 `-f` 或 `--format` 参数指定输出格式。例如：
+
+```bash
+./ospath home -f json  # 以 JSON 格式输出主目录路径
+```
+
 ## 依赖
 
 - `clap`：用于解析命令行参数。
 - `dirs`：用于获取系统目录路径。
 - `chrono`：用于获取和格式化系统时间。
+- `serde` 和 `serde_json`：用于 JSON 序列化。
 
 ## 许可证
 
 本项目采用 MIT 许可证。详情请参阅 [LICENSE](LICENSE) 文件。
-```
+
